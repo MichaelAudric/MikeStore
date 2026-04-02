@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 async function getStats() {
@@ -33,11 +33,11 @@ async function getStats() {
 }
 
 export default async function AdminPage() {
-  const cookieStore = await cookies();
+  const incomingHeaders = await headers();
 
   const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
     headers: {
-      Cookie: cookieStore.toString(),
+      cookie: incomingHeaders.get("cookie") || "",
     },
     cache: "no-store",
   });
