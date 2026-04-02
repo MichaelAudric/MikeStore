@@ -1,25 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-
-export async function getServerSideProps(context: any) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-    headers: { cookie: context.req.headers.cookie || "" },
-  });
-
-  if (!res.ok) {
-    // not logged in or invalid token
-    return { redirect: { destination: "/login", permanent: false } };
-  }
-
-  const user = await res.json();
-
-  if (user.role !== "ADMIN") {
-    // logged in but not admin → redirect to home
-    return { redirect: { destination: "/", permanent: false } };
-  }
-
-  return { props: { user } };
-}
+import { redirect } from "next/navigation";
 
 async function getStats() {
   const cookieStore = await cookies();
@@ -52,6 +33,25 @@ async function getStats() {
 }
 
 export default async function AdminPage() {
+  const cookieStore = await cookies();
+
+  const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+    cache: "no-store",
+  });
+
+  if (!meRes.ok) {
+    redirect("/login");
+  }
+
+  const user = await meRes.json();
+
+  if (user.role !== "ADMIN") {
+    redirect("/");
+  }
+
   const stats = await getStats();
 
   return (
