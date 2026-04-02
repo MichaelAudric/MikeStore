@@ -1,56 +1,42 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { jwtVerify } from "jose";
+// import { NextResponse } from "next/server";
+// import type { NextRequest } from "next/server";
+// import { jwtVerify } from "jose";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+// const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
-export async function middleware(request: NextRequest) {
-  // 1️⃣ Read token manually from cookie header
-  const cookieHeader = request.headers.get("cookie") || "";
-  const token = cookieHeader
-    .split("; ")
-    .find((c) => c.startsWith("token="))
-    ?.split("=")[1];
+// export async function middleware(request: NextRequest) {
+//   const token = request.cookies.get("token")?.value;
 
-  // 2️⃣ Create the response object early so we can add debug headers
-  const res = NextResponse.next();
+//   if (!token) {
+//     return NextResponse.redirect(new URL("/login", request.url));
+//   }
 
-  // 3️⃣ DEBUG HEADERS (browser will see these)
-  res.headers.set("x-debug-cookie-header", cookieHeader || "none");
-  res.headers.set("x-debug-token", token || "none");
+//   try {
+//     const { payload } = await jwtVerify(token, secret);
 
-  if (!token) {
-    res.headers.set("x-debug-redirect", "no-token");
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
+//     const isAdmin = payload.role === "ADMIN";
 
-  try {
-    const { payload } = await jwtVerify(token, secret);
-    res.headers.set("x-debug-jwt-payload", JSON.stringify(payload));
+//     const { pathname } = request.nextUrl;
 
-    const isAdmin = payload.role === "ADMIN";
-    const { pathname } = request.nextUrl;
+//     // admin-only routes
+//     if (pathname.startsWith("/admin") && !isAdmin) {
+//       return NextResponse.redirect(new URL("/", request.url));
+//     }
 
-    if (pathname.startsWith("/admin") && !isAdmin) {
-      res.headers.set("x-debug-redirect", "not-admin");
-      return NextResponse.redirect(new URL("/", request.url));
-    }
+//     return NextResponse.next();
+//   } catch {
+//     const res = NextResponse.redirect(new URL("/login", request.url));
+//     res.cookies.delete("token");
+//     return res;
+//   }
+// }
 
-    res.headers.set("x-debug-redirect", "none");
-    return res;
-  } catch (err) {
-    res.headers.set("x-debug-jwt-error", String(err));
-    res.cookies.delete("token");
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-}
-
-export const config = {
-  matcher: [
-    "/profile/:path*",
-    "/checkout/:path*",
-    "/orders/:path*",
-    "/cart/:path*",
-    "/admin/:path*",
-  ],
-};
+// export const config = {
+//   matcher: [
+//     "/profile/:path*",
+//     "/checkout/:path*",
+//     "/orders/:path*",
+//     "/cart/:path*",
+//     "/admin/:path*",
+//   ],
+// };
