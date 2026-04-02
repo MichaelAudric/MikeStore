@@ -5,9 +5,17 @@ import { jwtVerify } from "jose";
 const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
 export async function middleware(request: NextRequest) {
-  console.log("Cookies header:", request.headers.get("cookie"));
-  const token = request.cookies.get("token")?.value;
-  console.log("Token from cookies:", token);
+  // ✅ Parse the token manually from the cookie header
+  const cookieHeader = request.headers.get("cookie") || "";
+  const token = cookieHeader
+    .split("; ")
+    .find((c) => c.startsWith("token="))
+    ?.split("=")[1];
+
+  // Optional: temporarily send token in header for debugging
+  // const resDebug = NextResponse.next();
+  // resDebug.headers.set("x-debug-token", token || "none");
+  // return resDebug;
 
   if (!token) {
     return NextResponse.redirect(new URL("/login", request.url));
@@ -17,7 +25,6 @@ export async function middleware(request: NextRequest) {
     const { payload } = await jwtVerify(token, secret);
 
     const isAdmin = payload.role === "ADMIN";
-
     const { pathname } = request.nextUrl;
 
     // admin-only routes
