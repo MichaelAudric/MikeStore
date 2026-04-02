@@ -1,6 +1,26 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 
+export async function getServerSideProps(context: any) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+    headers: { cookie: context.req.headers.cookie || "" },
+  });
+
+  if (!res.ok) {
+    // not logged in or invalid token
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+
+  const user = await res.json();
+
+  if (user.role !== "ADMIN") {
+    // logged in but not admin → redirect to home
+    return { redirect: { destination: "/", permanent: false } };
+  }
+
+  return { props: { user } };
+}
+
 async function getStats() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
