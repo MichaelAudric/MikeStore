@@ -7,6 +7,8 @@ async function getStats() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
+  console.log("SSR token:", token);
+
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
     headers: {
       Cookie: `token=${token}`,
