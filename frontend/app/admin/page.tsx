@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 async function getStats() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
+  console.log("SSR token:", token);
 
   console.log("SSR token:", token);
 
