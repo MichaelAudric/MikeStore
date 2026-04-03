@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 async function getProducts() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 
+export const dynamic = "force-dynamic";
+
 async function getStats() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
