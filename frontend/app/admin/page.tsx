@@ -1,18 +1,18 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
 async function getStats() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-  console.log("SSR token:", token);
+  const reqHeaders = await headers(); // get all incoming headers
+  const cookieHeader = reqHeaders.get("cookie"); // grab raw cookie header
+  console.log("SSR cookie header:", cookieHeader);
 
   console.log("SSR token:", token);
 
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
     headers: {
-      Cookie: `token=${token}`,
+      Cookie: cookieHeader || "", // forward whatever cookies exist
     },
     cache: "no-store",
   });
