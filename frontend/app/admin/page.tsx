@@ -9,7 +9,7 @@ interface Stats {
   totalRevenue: number;
   pending: number;
 }
-
+//
 export default function AdminPage() {
   const [stats, setStats] = useState<Stats>({
     totalOrders: 0,
