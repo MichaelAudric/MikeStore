@@ -1,17 +1,9 @@
 import Link from "next/link";
-import { cookies, headers } from "next/headers";
-
-export const dynamic = "force-dynamic";
+import { apiFetch } from "@/lib/api";
 
 async function getStats() {
-  const reqHeaders = await headers(); // get all incoming headers
-  const cookieHeader = reqHeaders.get("cookie"); // grab raw cookie header
-  console.log("SSR cookie header:", cookieHeader);
-
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
-    headers: {
-      Cookie: cookieHeader || "", // forward whatever cookies exist
-    },
+  const res = await apiFetch(`/orders`, {
+    method: "GET",
     cache: "no-store",
   });
 
