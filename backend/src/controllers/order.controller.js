@@ -99,12 +99,11 @@ export const getOrderById = async (req, res) => {
   const user = req.user;
 
   const order = await prisma.order.findFirst({
-    where:
-      user.role === "ADMIN"
-        ? { id } // admin can access any order
-        : { userId: user.id, id }, // normal user only their own order
+    where: user.role === "ADMIN" ? { id } : { userId: user.id, id },
     include: {
       orderItems: {
+        where:
+          user.role === "ADMIN" ? { product: { createdById: user.id } } : {},
         include: {
           product: true,
         },
@@ -165,7 +164,6 @@ export const updateOrderStatus = async (req, res) => {
     where: { id },
     include: { orderItems: true },
   });
-  console.log(order);
 
   if (!order) {
     return res.status(404).json({ message: "Order not found" });
