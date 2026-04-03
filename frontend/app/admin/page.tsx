@@ -8,8 +8,6 @@ async function getStats() {
   const cookieHeader = reqHeaders.get("cookie"); // grab raw cookie header
   console.log("SSR cookie header:", cookieHeader);
 
-  console.log("SSR token:", token);
-
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
     headers: {
       Cookie: cookieHeader || "", // forward whatever cookies exist
