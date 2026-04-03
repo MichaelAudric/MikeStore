@@ -1,34 +1,44 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 import OrderDetailClient from "@/components/admin/orders/OrderDetailClient";
 
-async function getOrder(id: string) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+export default function OrderDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/${id}`, {
-    headers: {
-      Cookie: `token=${token}`,
-    },
-    method: "GET",
-    cache: "no-store",
-  });
+  const [order, setOrder] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!res.ok) return null;
+  useEffect(() => {
+    async function fetchOrder() {
+      try {
+        const res = await apiFetch(`/orders/${id}`, {
+          method: "GET",
+        });
 
-  return res.json();
-}
+        if (!res.ok) {
+          setOrder(null);
+          return;
+        }
 
-export default async function OrderDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const order = await getOrder(id);
+        const data = await res.json();
+        setOrder(data);
+      } catch (err) {
+        console.error(err);
+        setOrder(null);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  if (!order) {
-    return <div className="p-6 text-white">Order not found</div>;
-  }
+    fetchOrder();
+  }, [id]);
+
+  if (loading) return <div className="p-6 text-white">Loading order...</div>;
+  if (!order) return <div className="p-6 text-white">Order not found</div>;
 
   return <OrderDetailClient order={order} />;
 }

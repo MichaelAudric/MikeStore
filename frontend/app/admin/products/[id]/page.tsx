@@ -1,33 +1,42 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 import EditProductForm from "@/components/admin/products/EditProductForm";
 
-async function getProduct(id: string) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+export default function ProductDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
-    headers: {
-      Cookie: `token=${token}`,
-    },
-    method: "GET",
-    cache: "no-store",
-  });
-  if (!res.ok) return null;
+  const [product, setProduct] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  return res.json();
-}
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const res = await apiFetch(`/products/${id}`, { method: "GET" });
 
-export default async function ProductDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { id } = await params;
-  const product = await getProduct(id);
+        if (!res.ok) {
+          setProduct(null);
+          return;
+        }
 
-  if (!product) {
-    return <div className="p-6 text-white">Product not found</div>;
-  }
+        const data = await res.json();
+        setProduct(data);
+      } catch (err) {
+        console.error(err);
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProduct();
+  }, [id]);
+
+  if (loading) return <div className="p-6 text-white">Loading product...</div>;
+  if (!product) return <div className="p-6 text-white">Product not found</div>;
 
   return <EditProductForm product={product} />;
 }

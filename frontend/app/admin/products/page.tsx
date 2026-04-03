@@ -1,25 +1,37 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { apiFetch } from "@/lib/api";
 
-export const dynamic = "force-dynamic";
+export default function AdminProductsPage() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-async function getProducts() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await apiFetch(`/products/my`, { method: "GET" });
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/my`, {
-    headers: { Cookie: `token=${token}` },
-    method: "GET",
-    cache: "no-store",
-  });
+        if (!res.ok) {
+          setProducts([]);
+          return;
+        }
 
-  if (!res.ok) return [];
+        const data = await res.json();
+        setProducts(data);
+      } catch (err) {
+        console.error(err);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  return res.json();
-}
+    fetchProducts();
+  }, []);
 
-export default async function AdminProductsPage() {
-  const products = await getProducts();
+  if (loading) return <p className="p-6 text-white">Loading products...</p>;
 
   return (
     <div className="p-6 space-y-6">
@@ -44,7 +56,7 @@ export default async function AdminProductsPage() {
 
         {/* Product Rows */}
         <div className="divide-y divide-neutral-800">
-          {products.map((p: any) => (
+          {products.map((p) => (
             <Link
               key={p.id}
               href={`/admin/products/${p.id}`}
